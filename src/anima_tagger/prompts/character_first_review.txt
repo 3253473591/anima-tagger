@@ -1,0 +1,42 @@
+# 角色模式 · 一审提示词模板（character_first_review）
+
+> 生产环境使用的提示词资产未随本仓库分发。
+> 本文件仅保留结构骨架，供了解调用链与字段约定。
+> 替换本文件内容即可接入自有的审核提示词，无需改动任何代码。
+
+## 调用方式
+
+`anima_tagger.prompts.load_prompt(LoraMode.CHARACTER, Stage.FIRST_REVIEW, trigger_word=...)`
+
+加载后对模板做两处字面替换，再整体作为 prompt 送入本地多模态模型：
+
+| 占位符 | 含义 |
+|---|---|
+| `{trigger_word}` | 界面填写的触发词 |
+| `{first_caption}` | 一审为预填骨架，通常传入空串 |
+
+## 输入
+
+- 图片：单张待打标原图，由 `LocalInferenceAdapter` 以多模态方式送入 llama.cpp。
+- 触发词：本次训练的 `{trigger_word}`，角色 LoRA 用它替代角色名与脸部识别特征。
+- 模式约束：角色模式只描述画面事实，不得写出可识别的具体角色名。
+
+## 输出契约
+
+- 形态：**单行** 逗号分隔的英文 tag 串，无换行。
+- 首项：必须以 `{trigger_word},` 开头。
+- 大小写：所有标签小写（`{trigger_word}` 原样保留）。
+- 角色模式：**不允许**自然语言描述。
+- 禁用语法：不得出现 `#`、括号、`(tag:1.2)` 之类权重语法。
+
+## 校验
+
+生成的 caption 由 `anima_tagger.domain.validation.validate_first_caption` 校验，
+经 `normalize_first_caption` 做机械归一（去重、小写、剔除禁用词与权重语法）后写入 `图片名-1.txt`。
+提示词不必重复实现这些规则。
+
+## 约束
+
+- 禁用词：见 `resources/forbidden_common.txt` 与 `resources/forbidden_character.txt`。
+- 不得在代码中手写本提示词的缩减版；提示词以资产形式原样加载。
+- 内容分级以画面事实为准，不得为规避分级而弱化描述。

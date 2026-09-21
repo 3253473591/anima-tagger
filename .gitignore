@@ -1,0 +1,45 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+build/
+dist/
+.eggs/
+
+# 虚拟环境
+.venv/
+venv/
+env/
+
+# 测试与缓存
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# 模型与数据（体积大，不入库）
+*.gguf
+*.safetensors
+*.ckpt
+*.pt
+*.pth
+
+# 运行时产物
+*.log
+*.sqlite3
+*.db
+.cache/
+
+# 密钥与本地配置（切勿提交）
+.env
+.env.*
+*.pem
+*.key
+secrets.json
+
+# 编辑器 / 系统
+.idea/
+.DS_Store
+Thumbs.db

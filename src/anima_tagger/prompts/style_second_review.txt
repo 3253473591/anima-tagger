@@ -1,0 +1,48 @@
+# 画风模式 · 二审提示词模板（style_second_review）
+
+> 生产环境使用的提示词资产未随本仓库分发。
+> 本文件仅保留结构骨架，供了解调用链与字段约定。
+> 替换本文件内容即可接入自有的审核提示词，无需改动任何代码。
+
+## 调用方式
+
+`anima_tagger.prompts.load_prompt(LoraMode.STYLE, Stage.SECOND_REVIEW, trigger_word=..., first_caption=...)`
+
+| 占位符 | 含义 |
+|---|---|
+| `{trigger_word}` | 界面填写的触发词 |
+| `{first_caption}` | 本地一审产出的 caption（即 `图片名-1.txt` 内容）|
+
+## 输入
+
+- 图片：原图（与一审同一张），由云端 OpenAI 兼容接口以多模态方式送入。
+- 一审 caption：`{first_caption}`。
+- 触发词：`{trigger_word}`，画风 LoRA 用它学习一个新的艺术家风格或游戏插图风格。
+
+## 输出契约（严格 JSON，无 Markdown 包裹）
+
+| 字段 | 类型 | 约定 |
+|---|---|---|
+| `schema_version` | int/str | 输出契约版本 |
+| `score` | int | 0–10，一审质量评分 |
+| `first_review_status` | str | `pass` 或 `needs_revision`；与 `score` 必须自洽（≥9 对应 `pass`）|
+| `comment` | str | 评审说明 |
+| `first_caption_validity` | array | 每项 `{"tag": str, "valid": bool}`，覆盖一审全部标签且不重复 |
+| `final_caption` | str | 修订后的最终 caption，须以 `{trigger_word},` 开头 |
+| `tag_translations` | array | 可选；每项 `{"tag": str, "cn": str}`，`cn` 非空且不与已有条目重复 |
+
+`final_caption` 必须自身满足标签规则：单行、首项为触发词、全小写、无重复、无权重语法、不含禁用词。
+画风模式仅保留 `{trigger_word}` 作为风格触发词；允许用 `. ` 追加至多一句自然语言画面描述。
+
+## 校验
+
+返回 JSON 由 `anima_tagger.domain.validation.validate_second_review` 校验：字段完整性、
+score 区间、score 与 `first_review_status` 的自洽性、`first_caption_validity` / `tag_translations`
+的格式与去重，并把 `final_caption` 交给 `validate_caption` 复检。
+校验不通过按 `CaptionValidationError` 计入重试，不落盘。
+
+## 约束
+
+- 禁用词：见 `resources/forbidden_common.txt` 与 `resources/forbidden_style.txt`。
+- 不得在代码中手写本提示词的缩减版；提示词以资产形式原样加载。
+- 内容分级以画面事实为准，不得为规避分级而弱化描述。

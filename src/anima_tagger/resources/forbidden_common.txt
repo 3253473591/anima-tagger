@@ -1,0 +1,39 @@
+fantasy
+sci-fi
+futuristic
+vibrant
+dynamic
+beautiful
+detailed
+energetic
+dramatic
+atmospheric
+moody
+emotional
+cozy
+tense
+oppressive
+cinematic
+masterpiece
+best quality
+high quality
+low quality
+worst quality
+score_9
+score_8
+score_7
+score_6
+score_5
+score_4
+score_3
+score_2
+score_1
+character
+characters
+people
+person
+figure
+figures
+by artist
+artist name
+
