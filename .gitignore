@@ -41,5 +41,6 @@ secrets.json
 
 # 编辑器 / 系统
 .idea/
+.vscode/
 .DS_Store
 Thumbs.db
